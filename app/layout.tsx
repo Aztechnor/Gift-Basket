@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "GiftBasket - AI-Powered Gift Curation",
   description: "Find the perfect gift for every occasion with our AI-powered recommendations",
-    generator: 'v0.app'
+  generator: 'v0.app'
 }
 
 export default function RootLayout({
