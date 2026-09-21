@@ -1,4 +1,5 @@
 import Image from "next/image"
+import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Palette, Shirt, Coffee, Heart } from "lucide-react"
@@ -99,7 +100,7 @@ export function CustomPrintingSection() {
                 size="lg"
                 className="bg-white text-zinc-900 hover:bg-zinc-100 px-8 h-14 rounded-full text-base font-medium w-full sm:w-auto shadow-sm"
               >
-                <a href="/categories/custom">Start Customizing</a>
+                <Link href="/categories/custom">Start Customizing</Link>
               </Button>
               <Button
                 asChild
@@ -107,7 +108,7 @@ export function CustomPrintingSection() {
                 size="lg"
                 className="border-zinc-700 text-white hover:bg-zinc-800 hover:text-white px-8 h-14 rounded-full text-base font-medium bg-zinc-800/50 w-full sm:w-auto"
               >
-                <a href="/categories/custom">View Inspiration</a>
+                <Link href="/categories/custom">View Inspiration</Link>
               </Button>
             </div>
           </div>

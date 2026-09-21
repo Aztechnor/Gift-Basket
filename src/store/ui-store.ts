@@ -1,5 +1,4 @@
 import { create } from 'zustand'
-import { theme } from 'next-themes' // If using next-themes
 
 interface UIState {
   // Theme

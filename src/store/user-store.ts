@@ -1,6 +1,6 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { User, UserPreferences } from '@/types'
+import { User, UserPreferences } from '@/src/types'
 
 interface UserState {
   // State

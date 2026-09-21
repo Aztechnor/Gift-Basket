@@ -1,7 +1,7 @@
-import { Product, RecommendationContext, ChatMessage, AIRecommendation } from '@/types'
+import { Product, RecommendationContext, ChatMessage, AIRecommendation } from '@/src/types'
 import { GoogleGenAI } from '@google/genai'
-import { DEFAULTS, ERROR_MESSAGES } from '@/constants'
-import { formatCurrency, generateId } from '@/utils'
+import { DEFAULTS, ERROR_MESSAGES } from '@/src/constants'
+import { formatCurrency, generateId } from '@/src/utils'
 
 // ============================================
 // AI SERVICE CONFIGURATION
@@ -373,7 +373,7 @@ class AIService {
       }))
       
       const response = await this.ai.models.generateContent({
-        model: this.config.model,
+        model: this.config.model ?? DEFAULT_CONFIG.model!,
         contents: [
           { role: 'user', parts: [{ text: SYSTEM_PROMPT(this.catalog) }] },
           { role: 'model', parts: [{ text: 'Understood. I will follow these instructions.' }] },
@@ -406,7 +406,7 @@ class AIService {
       const parsed = JSON.parse(text)
       
       return {
-        content: parsed.content,
+        content: parsed.content ?? '',
         productIds: parsed.productIds,
         suggestions: parsed.suggestions,
       }
@@ -432,8 +432,8 @@ class AIService {
         parts: [{ text: msg.content }],
       }))
       
-      const stream = await this.ai.models.streamGenerateContent({
-        model: this.config.model,
+      const stream = await this.ai.models.generateContentStream({
+        model: this.config.model ?? DEFAULT_CONFIG.model!,
         contents: [
           { role: 'user', parts: [{ text: SYSTEM_PROMPT(this.catalog) }] },
           { role: 'model', parts: [{ text: 'Understood. I will follow these instructions.' }] },
@@ -653,7 +653,7 @@ class AIService {
     
     if (context.budget) {
       const budgetRange = this.getBudgetRange(context.budget)
-      parts.push(`within your ${budgetRange.label} budget`)
+      parts.push(`within your ${budgetRange.min}-${budgetRange.max} budget`)
     }
     
     if (context.recipient) {

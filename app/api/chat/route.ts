@@ -2,7 +2,7 @@ import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
 import { RecommendedProduct } from "@/lib/conversational-ai";
 
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+const geminiApiKey = process.env.GEMINI_API_KEY;
 
 const PRODUCT_CATALOG = [
   {
@@ -121,7 +121,12 @@ Schema requirements:
 `;
 
 export async function POST(req: NextRequest) {
+  if (!geminiApiKey) {
+    return NextResponse.json({ error: "AI service is not configured" }, { status: 503 });
+  }
+
   try {
+    const ai = new GoogleGenAI({ apiKey: geminiApiKey });
     const { message, history } = await req.json();
 
     const formattedHistory = history.map((msg: any) => ({

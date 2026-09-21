@@ -1,4 +1,4 @@
-import { Occasion } from '@/types'
+import { Occasion } from '@/src/types'
 
 // ============================================
 // EXPANDED OCCASIONS WITH DETAILED INFORMATION
@@ -929,7 +929,7 @@ export function searchEvents(query: string): Event[] {
       event.name.toLowerCase().includes(queryLower) ||
       event.description.toLowerCase().includes(queryLower) ||
       event.tags.some((tag) => tag.toLowerCase().includes(queryLower)) ||
-      event.category.toLowerCase().includes(queryLower) ||
+      event.category?.toLowerCase().includes(queryLower) ||
       (event.giftIdeas && event.giftIdeas.some((idea) => idea.toLowerCase().includes(queryLower)))
     )
   })

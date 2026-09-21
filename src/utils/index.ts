@@ -1,7 +1,7 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
-import { Product, Cart, CartItem, Order, PriceRange, BudgetRange } from '@/types'
-import { BUDGET_RANGES, DEFAULTS } from '@/constants'
+import { Product, Cart, CartItem, Order, PriceRange, BudgetRange } from '@/src/types'
+import { BUDGET_RANGES, DEFAULTS } from '@/src/constants'
 
 // ============================================
 // CLASS NAME UTILITIES

@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import { Cart, CartItem, Product } from '@/types'
-import { generateCartItemId, DEFAULTS } from '@/utils'
+import { Cart, CartItem, Product } from '@/src/types'
+import { generateCartItemId } from '@/src/utils'
+import { DEFAULTS } from '@/src/constants'
 import { toast } from 'sonner'
 
 interface CartState {

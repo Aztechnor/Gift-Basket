@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Bot, User, Send, Sparkles, MessageCircle, ShoppingCart, Star, RefreshCw, Download } from "lucide-react"
 import Image from "next/image"
+import Link from "next/link"
 import { ConversationalAI, type ChatMessage } from "@/lib/conversational-ai"
 import { formatCurrency } from "@/lib/utils"
 

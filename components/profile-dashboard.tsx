@@ -12,6 +12,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, Di
 import { Switch } from "@/components/ui/switch"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { MapPin, Package, CalendarHeart, Settings, Camera, BellRing, BellOff, Heart, Users, CreditCard, Shield, Plus, Sparkles, User, RefreshCw, X } from "lucide-react"
+import Image from "next/image"
 
 export function ProfileDashboard() {
   const [avatarUrl, setAvatarUrl] = useState("/placeholder.svg?height=100&width=100")
@@ -203,7 +204,7 @@ function OverviewTab() {
                 <div key={i} className="p-6 flex flex-col sm:flex-row gap-4 justify-between items-start sm:items-center">
                   <div className="flex items-center gap-4">
                     <div className="w-16 h-16 bg-zinc-100 rounded-xl overflow-hidden shrink-0">
-                      <img src={`/placeholder.svg?height=100&width=100&text=Gift`} className="object-cover w-full h-full" alt="Gift" />
+                      <Image src="/placeholder.svg?height=100&width=100&text=Gift" className="object-cover" alt="Gift" width={100} height={100} />
                     </div>
                     <div>
                       <p className="text-sm font-semibold text-zinc-500 mb-1">{i === 1 ? 'Sent to Brian' : 'Sent to Aisha'}</p>

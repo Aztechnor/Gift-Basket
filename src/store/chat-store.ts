@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { ChatMessage, Conversation, RecommendationContext, Product } from '@/types'
-import { generateId } from '@/utils'
+import { ChatMessage, Conversation, RecommendationContext, Product } from '@/src/types'
+import { generateId } from '@/src/utils'
 
 interface ChatState {
   // State

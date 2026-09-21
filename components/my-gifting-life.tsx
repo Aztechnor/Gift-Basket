@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState } from "react"
+import type { FormEvent } from "react"
 import {
   Search,
   RefreshCw,
@@ -29,7 +30,7 @@ export function MyGiftingLife() {
   const [newRelationship, setNewRelationship] = useState("");
   const [newOccasion, setNewOccasion] = useState("");
   
-  const handleAddPerson = (e) => {
+  const handleAddPerson = (e: FormEvent) => {
     e.preventDefault();
     if (newName) {
       setPeople([...people, {

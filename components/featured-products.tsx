@@ -3,6 +3,7 @@
 import { Sparkles } from "lucide-react"
 import { ProductCard, type Product } from "@/components/product-card"
 import { Button } from "@/components/ui/button"
+import Link from "next/link"
 
 const featuredProducts: Product[] = [
   {
@@ -84,7 +85,7 @@ export function FeaturedProducts() {
             size="lg"
             className="border-zinc-200 text-zinc-700 hover:bg-zinc-50 px-8 h-12 md:h-14 rounded-full text-sm md:text-base font-medium w-full sm:w-auto shadow-sm"
           >
-            <a href="/categories">Explore All Gifts</a>
+            <Link href="/categories">Explore All Gifts</Link>
           </Button>
         </div>
       </div>

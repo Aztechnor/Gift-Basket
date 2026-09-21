@@ -1,4 +1,4 @@
-import { Occasion, Category, BudgetRange, RecipientRelationship } from '@/types'
+import { Occasion, Category, BudgetRange, RecipientRelationship } from '@/src/types'
 
 // ============================================
 // OCCASIONS

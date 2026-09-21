@@ -117,8 +117,8 @@ export interface Category {
   image?: string
   parent?: Category
   children?: Category[]
-  order: number
-  isActive: boolean
+  order?: number
+  isActive?: boolean
   metadata?: Record<string, unknown>
 }
 
