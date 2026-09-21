@@ -22,6 +22,20 @@ Continue building your app on:
 
 **[https://v0.app/chat/rJpcBwQ77bM](https://v0.app/chat/rJpcBwQ77bM)**
 
+## Production setup
+
+Copy `.env.example` to `.env.local` and configure Supabase, Gemini, M-Pesa Daraja, Stripe, and the production site URL. Apply the SQL migrations in `supabase/migrations` to the target Supabase project before enabling checkout.
+
+The native shells are generated with Capacitor:
+
+```bash
+npm run mobile:sync
+npm run mobile:android
+npm run mobile:ios
+```
+
+Set `CAPACITOR_SERVER_URL` to the deployed HTTPS web app before creating release builds. Android release builds require Android Studio and signing credentials. iOS release builds require macOS, Xcode, Apple certificates, provisioning, and App Store Connect configuration.
+
 ## How It Works
 
 1. Create and modify your project using [v0.app](https://v0.app)

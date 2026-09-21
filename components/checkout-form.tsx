@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -10,6 +10,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Textarea } from "@/components/ui/textarea"
 import { Phone, CreditCard, CheckCircle, Loader2, ArrowRight, ArrowLeft, Gift, MessageSquare, MapPin, Search, Calendar } from "lucide-react"
 import { formatCurrency } from "@/lib/utils"
+import { readCart, type CartProduct } from "@/lib/cart"
 import Link from "next/link"
 import Image from "next/image"
 
@@ -27,35 +28,25 @@ const STEPS = [
   "Payment",
 ]
 
-// Mock cart items (shared logic just for display)
-const cartItems = [
-  {
-    id: 1,
-    name: "Classic Red Rose Bouquet",
-    price: 8500,
-    quantity: 1,
-    image: "/placeholder.svg?height=80&width=80",
-  },
-  {
-    id: 2,
-    name: "Artisan Chocolate Truffle Box",
-    price: 4500,
-    quantity: 2,
-    image: "/placeholder.svg?height=80&width=80",
-  },
-]
-
 export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormProps) {
+  const [cartItems, setCartItems] = useState<CartProduct[]>([])
   const [currentStep, setCurrentStep] = useState(0)
   const [isProcessing, setIsProcessing] = useState(false)
   const [isComplete, setIsComplete] = useState(false)
+  const [paymentPending, setPaymentPending] = useState(false)
+  const [orderReference, setOrderReference] = useState("")
+  const [error, setError] = useState("")
   const [phoneNumber, setPhoneNumber] = useState("")
 
   // Form states
   const [yourDetails, setYourDetails] = useState({ firstName: "", lastName: "", email: "", phone: "" })
-  const [recipient, setRecipient] = useState({ type: "new", name: "", phone: "" })
+  const [recipient, setRecipient] = useState({ type: "new", name: "", phone: "", email: "" })
   const [message, setMessage] = useState({ to: "", from: "", content: "" })
-  const [delivery, setDelivery] = useState({ type: "new", address: "", city: "", date: "", instructions: "", isSurprise: false })
+  const [delivery, setDelivery] = useState({ type: "new", address: "", city: "", date: "", instructions: "", isSurprise: false, isIncognito: false })
+
+  useEffect(() => {
+    setCartItems(readCart())
+  }, [])
 
   const handleNext = () => {
     if (currentStep < STEPS.length - 1) {
@@ -70,12 +61,64 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
   }
 
   const handlePayment = async () => {
-    if (!paymentMethod) return
+    if (!paymentMethod || !cartItems.length) return
     setIsProcessing(true)
-    setTimeout(() => {
+    setError("")
+
+    try {
+      const orderResponse = await fetch("/api/orders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: yourDetails.email,
+          phone: yourDetails.phone,
+          recipientName: recipient.name,
+          recipientPhone: recipient.phone || undefined,
+          recipientEmail: recipient.email || undefined,
+          address: delivery.address,
+          city: delivery.city,
+          deliveryDate: delivery.date || undefined,
+          deliveryInstructions: delivery.instructions || undefined,
+          giftMessage: message.content || undefined,
+          isSurprise: delivery.isSurprise,
+          isIncognito: delivery.isIncognito,
+          items: cartItems.map((item) => ({ productId: item.id, quantity: item.quantity ?? 1 })),
+        }),
+      })
+      const orderResult = await orderResponse.json()
+      if (!orderResponse.ok) throw new Error(orderResult.error || "Unable to create order")
+
+      const order = orderResult.order as { id: string; order_number: string }
+      setOrderReference(order.order_number)
+
+      if (paymentMethod === "card") {
+        const paymentResponse = await fetch("/api/payments/card", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ orderId: order.id }),
+        })
+        const paymentResult = await paymentResponse.json()
+        if (!paymentResponse.ok || !paymentResult.checkoutUrl) throw new Error(paymentResult.error || "Unable to start card payment")
+        window.location.assign(paymentResult.checkoutUrl)
+        return
+      }
+
+      const normalizedPhone = (phoneNumber || yourDetails.phone).replace(/\s+/g, "").replace(/^\+/, "").replace(/^0/, "254")
+      const paymentResponse = await fetch("/api/payments/mpesa", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId: order.id, phone: normalizedPhone }),
+      })
+      const paymentResult = await paymentResponse.json()
+      if (!paymentResponse.ok) throw new Error(paymentResult.error || "Unable to start M-Pesa payment")
+
+      setPaymentPending(true)
       setIsProcessing(false)
       setIsComplete(true)
-    }, 2000)
+    } catch (paymentError) {
+      setError(paymentError instanceof Error ? paymentError.message : "Unable to process payment")
+      setIsProcessing(false)
+    }
   }
 
   if (isComplete) {
@@ -85,9 +128,9 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mb-6">
             <CheckCircle className="w-10 h-10 text-emerald-600" />
           </div>
-          <h2 className="text-3xl font-bold text-emerald-950 mb-3">Your gift is on its way.</h2>
+          <h2 className="text-3xl font-bold text-emerald-950 mb-3">{paymentPending ? "Payment request sent." : "Your gift is on its way."}</h2>
           <p className="text-emerald-700/80 mb-8 max-w-md">
-            Order reference <span className="font-semibold text-emerald-900">#GFT-{Math.floor(100000 + Math.random() * 900000)}</span>. We've sent a confirmation email to you.
+            Order reference <span className="font-semibold text-emerald-900">{orderReference}</span>. {paymentPending ? "Complete the M-Pesa prompt on your phone to confirm the order." : "Your payment was confirmed."}
           </p>
           
           <div className="w-full max-w-md bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 text-left mb-8 space-y-4">
@@ -247,6 +290,11 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
                     <Input id="recPhone" value={recipient.phone} onChange={(e) => setRecipient({...recipient, phone: e.target.value})} placeholder="For delivery coordination" />
                     <p className="text-xs text-zinc-500">Don't worry, we won't ruin the surprise if you ask us not to.</p>
                   </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="recEmail">GiftBasket account email (Optional)</Label>
+                    <Input id="recEmail" type="email" value={recipient.email} onChange={(e) => setRecipient({...recipient, email: e.target.value})} placeholder="tag-a-friend@example.com" />
+                    <p className="text-xs text-zinc-500">Tag an existing GiftBasket user so they can see the gift in their account.</p>
+                  </div>
                 </div>
               )}
             </div>
@@ -335,6 +383,13 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
                          <div>
                            <p className="text-sm font-semibold text-purple-900">It's a surprise!</p>
                            <p className="text-xs text-purple-700 mt-0.5">We will not contact the recipient or reveal the sender before delivery.</p>
+                         </div>
+                      </label>
+                      <label className="flex items-start gap-3 mt-3 bg-zinc-900 p-3 rounded-lg border border-zinc-800 cursor-pointer">
+                         <input type="checkbox" className="mt-1 border-zinc-500 text-zinc-900 focus:ring-zinc-900 rounded" checked={delivery.isIncognito} onChange={(e) => setDelivery({...delivery, isIncognito: e.target.checked})} />
+                         <div>
+                           <p className="text-sm font-semibold text-white">Incognito gift</p>
+                           <p className="text-xs text-zinc-300 mt-0.5">Only you and GiftBasket admins can see this purchase. The tagged recipient will not see it.</p>
                          </div>
                       </label>
                    </div>
@@ -431,21 +486,9 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
 
               {paymentMethod === "card" && (
                 <div className="space-y-4 border-t border-zinc-100 pt-4 mt-4 animate-in fade-in zoom-in-95 duration-200">
-                  <div className="space-y-2">
-                    <Label htmlFor="cardNumber">Card Number</Label>
-                    <Input id="cardNumber" placeholder="XXXX XXXX XXXX XXXX" />
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <div className="space-y-2 col-span-2">
-                      <Label htmlFor="expiryDate">Expiry Date</Label>
-                      <Input id="expiryDate" placeholder="MM/YY" />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="cvv">CVV</Label>
-                      <Input id="cvv" placeholder="XXX" />
-                    </div>
-                  </div>
+                  <p className="rounded-lg bg-blue-50 p-4 text-sm text-blue-800">
+                    You will be redirected to Stripe's secure checkout to enter your card details. GiftBasket never stores your card number.
+                  </p>
                 </div>
               )}
             </div>
@@ -453,6 +496,7 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
 
           {/* Form Actions */}
           <div className="flex justify-between items-center mt-8 pt-6 border-t border-zinc-100">
+             {error && <p role="alert" className="mr-4 text-sm text-red-600">{error}</p>}
              <Button variant="ghost" onClick={handleBack} disabled={currentStep === 0 || isProcessing} className="text-zinc-500 hover:text-zinc-900 hover:bg-zinc-100 rounded-xl px-6">
                 {currentStep > 0 ? (
                   <>
@@ -477,7 +521,7 @@ export function CheckoutForm({ paymentMethod, setPaymentMethod }: CheckoutFormPr
                     </>
                   ) : (
                     <>
-                      Pay {formatCurrency(21470)}
+                      Pay securely
                     </>
                   )}
                 </Button>

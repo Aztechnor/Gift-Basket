@@ -1,40 +1,77 @@
 "use client"
 
 import { createContext, useContext, useEffect, useMemo, useState } from "react"
-
-const ADMIN_AUTH_KEY = "giftbasket-admin-auth"
+import { createSupabaseBrowserClient } from "@/lib/supabase/client"
 
 type AdminAuthContextValue = {
   isAuthenticated: boolean
-  login: (email: string, password: string) => boolean
-  logout: () => void
+  isLoading: boolean
+  login: (email: string, password: string) => Promise<{ error?: string }>
+  logout: () => Promise<void>
 }
 
 const AdminAuthContext = createContext<AdminAuthContextValue | null>(null)
 
 export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const value = window.localStorage.getItem(ADMIN_AUTH_KEY)
-    setIsAuthenticated(value === "true")
+    let active = true
+    const supabase = createSupabaseBrowserClient()
+
+    const checkAdmin = async (userId: string | undefined) => {
+      if (!userId) {
+        if (active) {
+          setIsAuthenticated(false)
+          setIsLoading(false)
+        }
+        return
+      }
+
+      const { data } = await supabase.from("profiles").select("role").eq("id", userId).single()
+      if (active) {
+        setIsAuthenticated(data?.role === "admin")
+        setIsLoading(false)
+      }
+    }
+
+    void supabase.auth.getUser().then(({ data }) => checkAdmin(data.user?.id))
+
+    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+      void checkAdmin(session?.user.id)
+    })
+
+    return () => {
+      active = false
+      listener.subscription.unsubscribe()
+    }
   }, [])
 
-  const login = (email: string, password: string) => {
-    const valid = email.trim().toLowerCase() === "admin@giftbasket.com" && password === "giftbasket123"
-    if (valid) {
-      window.localStorage.setItem(ADMIN_AUTH_KEY, "true")
-      setIsAuthenticated(true)
+  const login = async (email: string, password: string) => {
+    try {
+      const supabase = createSupabaseBrowserClient()
+      const { error } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password,
+      })
+
+      if (error) {
+        return { error: "Invalid email or password" }
+      }
+
+      return {}
+    } catch {
+      return { error: "Authentication is not configured" }
     }
-    return valid
   }
 
-  const logout = () => {
-    window.localStorage.removeItem(ADMIN_AUTH_KEY)
-    setIsAuthenticated(false)
+  const logout = async () => {
+    const supabase = createSupabaseBrowserClient()
+    await supabase.auth.signOut()
   }
 
-  const value = useMemo(() => ({ isAuthenticated, login, logout }), [isAuthenticated])
+  const value = useMemo(() => ({ isAuthenticated, isLoading, login, logout }), [isAuthenticated, isLoading])
 
   return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>
 }

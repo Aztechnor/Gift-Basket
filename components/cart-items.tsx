@@ -1,47 +1,21 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { Card, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { formatCurrency } from "@/lib/utils"
+import { readCart, type CartProduct } from "@/lib/cart"
 import { Trash2, Heart, Gift, MessageSquare, Edit2, Calendar, User, MapPin } from "lucide-react"
 
-// Mock cart items
-const initialCartItems = [
-  {
-    id: 1,
-    name: "Classic Red Rose Bouquet",
-    price: 8500,
-    quantity: 1,
-    image: "/placeholder.svg?height=160&width=160",
-    recipient: "Sarah (Partner)",
-    occasion: "Anniversary",
-    hasMessage: true,
-    message: "Happy Anniversary, my love!",
-    hasGiftWrap: true,
-    deliveryDate: "Oct 12, 2026",
-    deliveryLocation: "Nairobi",
-  },
-  {
-    id: 2,
-    name: "Artisan Chocolate Truffle Box",
-    price: 4500,
-    quantity: 2,
-    image: "/placeholder.svg?height=160&width=160",
-    recipient: "James (Friend)",
-    occasion: "Birthday",
-    hasMessage: false,
-    hasGiftWrap: false,
-    deliveryDate: "Oct 15, 2026",
-    deliveryLocation: "Mombasa",
-  },
-]
-
 export function CartItems() {
-  const [items, setItems] = useState(initialCartItems)
+  const [items, setItems] = useState<CartProduct[]>([])
+
+  useEffect(() => {
+    setItems(readCart())
+  }, [])
 
   const removeItem = (id: number) => {
     setItems(items.filter((item) => item.id !== id))
@@ -93,15 +67,15 @@ export function CartItems() {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-2 gap-x-4 mb-4 mt-2">
                   <div className="flex items-center text-sm text-zinc-600">
                     <User className="w-4 h-4 mr-2 text-zinc-400 shrink-0" />
-                    <span className="truncate"><span className="text-zinc-400 mr-1">For:</span> {item.recipient}</span>
+                    <span className="truncate"><span className="text-zinc-400 mr-1">For:</span> Gift recipient</span>
                   </div>
                   <div className="flex items-center text-sm text-zinc-600">
                     <Calendar className="w-4 h-4 mr-2 text-zinc-400 shrink-0" />
-                    <span className="truncate"><span className="text-zinc-400 mr-1">Occasion:</span> {item.occasion}</span>
+                    <span className="truncate"><span className="text-zinc-400 mr-1">Category:</span> {item.category || "Gifts"}</span>
                   </div>
                   <div className="flex items-center text-sm text-zinc-600">
                     <MapPin className="w-4 h-4 mr-2 text-zinc-400 shrink-0" />
-                    <span className="truncate"><span className="text-zinc-400 mr-1">Delivery:</span> {item.deliveryDate} to {item.deliveryLocation}</span>
+                    <span className="truncate"><span className="text-zinc-400 mr-1">Delivery:</span> Scheduled at checkout</span>
                   </div>
                   <div className="flex items-center text-sm text-zinc-600">
                     <span className="w-4 h-4 mr-2 text-zinc-400 shrink-0 font-medium">Qty:</span>
@@ -111,24 +85,9 @@ export function CartItems() {
 
                 {/* Gift Badges / Add-ons */}
                 <div className="flex flex-wrap gap-2 mb-4">
-                  {item.hasMessage ? (
-                    <Badge variant="secondary" className="bg-emerald-50 text-emerald-700 border-emerald-200">
-                      <MessageSquare className="w-3 h-3 mr-1" /> Message Added
-                    </Badge>
-                  ) : (
-                    <button type="button" className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 border-zinc-200 text-zinc-500 hover:text-zinc-900">
-                      <MessageSquare className="w-3 h-3 mr-1" /> Add Message
-                    </button>
-                  )}
-                  {item.hasGiftWrap ? (
-                    <Badge variant="secondary" className="bg-purple-50 text-purple-700 border-purple-200">
-                      <Gift className="w-3 h-3 mr-1" /> Gift Wrapped
-                    </Badge>
-                  ) : (
-                    <button type="button" className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-zinc-900 focus:ring-offset-2 border-zinc-200 text-zinc-500 hover:text-zinc-900">
-                      <Gift className="w-3 h-3 mr-1" /> Add Gift Wrap
-                    </button>
-                  )}
+                  <Badge variant="secondary" className="bg-zinc-100 text-zinc-700 border-zinc-200">
+                    <Gift className="w-3 h-3 mr-1" /> Gift options at checkout
+                  </Badge>
                 </div>
 
                 {/* Actions */}

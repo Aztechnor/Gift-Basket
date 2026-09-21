@@ -9,7 +9,23 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata: Metadata = {
   title: "GiftBasket - AI-Powered Gift Curation",
   description: "Find the perfect gift for every occasion with our AI-powered recommendations",
-  generator: 'v0.app'
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://giftbasket.vercel.app"),
+  generator: "GiftBasket",
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    title: "GiftBasket - AI-Powered Gift Curation",
+    description: "Find the perfect gift for every occasion with our AI-powered recommendations",
+    url: "/",
+    siteName: "GiftBasket",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "GiftBasket - AI-Powered Gift Curation",
+    description: "Find the perfect gift for every occasion with our AI-powered recommendations",
+  },
 }
 
 export default function RootLayout({

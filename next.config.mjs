@@ -3,6 +3,9 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
+  outputFileTracingExcludes: {
+    "/*": ["./android/**", "./ios/**"],
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },

@@ -13,8 +13,9 @@ export default function AdminLogin() {
   const router = useRouter()
   const { login, isAuthenticated } = useAdminAuth()
   const [loading, setLoading] = useState(false)
-  const [email, setEmail] = useState("admin@giftbasket.com")
-  const [password, setPassword] = useState("giftbasket123")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -22,18 +23,19 @@ export default function AdminLogin() {
     }
   }, [isAuthenticated, router])
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!email.trim() || !password.trim()) return
 
     setLoading(true)
-    setTimeout(() => {
-      const success = login(email, password)
-      setLoading(false)
-      if (success) {
-        router.push("/admin/dashboard")
-      }
-    }, 600)
+    setError("")
+    const result = await login(email, password)
+    setLoading(false)
+    if (result.error) {
+      setError(result.error)
+      return
+    }
+    router.push("/admin/dashboard")
   }
 
   return (
@@ -51,6 +53,7 @@ export default function AdminLogin() {
 
         <form onSubmit={handleLogin}>
           <CardContent className="space-y-4">
+            {error && <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-700">{error}</p>}
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
               <div className="relative">
@@ -89,9 +92,6 @@ export default function AdminLogin() {
               {!loading && <ArrowRight className="ml-2 h-4 w-4" />}
             </Button>
 
-            <p className="text-center text-xs text-zinc-500">
-              Demo login: admin@giftbasket.com / giftbasket123
-            </p>
           </CardFooter>
         </form>
       </Card>

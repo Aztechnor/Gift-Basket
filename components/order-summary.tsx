@@ -1,32 +1,23 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import Link from "next/link"
 import { formatCurrency } from "@/lib/utils"
+import { readCart, type CartProduct } from "@/lib/cart"
 import { ChevronRight } from "lucide-react"
 
-// Mock cart items
-const cartItems = [
-  {
-    id: 1,
-    name: "Classic Red Rose Bouquet",
-    price: 8500,
-    quantity: 1,
-    image: "/placeholder.svg?height=80&width=80",
-  },
-  {
-    id: 2,
-    name: "Artisan Chocolate Truffle Box",
-    price: 4500,
-    quantity: 2,
-    image: "/placeholder.svg?height=80&width=80",
-  },
-]
-
 export function OrderSummary({ isCart = false }: { isCart?: boolean }) {
-  // Calculate totals
-  const subtotal = cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
+  const [cartItems, setCartItems] = useState<CartProduct[]>([])
+
+  useEffect(() => {
+    setCartItems(readCart())
+  }, [])
+
+  const subtotal = cartItems.reduce((sum, item) => sum + item.price * (item.quantity ?? 1), 0)
   const shipping = 1170
   const tax = Math.round(subtotal * 0.16) // 16% VAT
   const total = subtotal + shipping + tax
@@ -56,9 +47,9 @@ export function OrderSummary({ isCart = false }: { isCart?: boolean }) {
                 <p className="text-sm font-medium text-zinc-900 line-clamp-2">{item.name}</p>
                 <div className="flex justify-between items-center mt-1">
                   <p className="text-sm text-zinc-500">
-                    Qty: {item.quantity}
+                    Qty: {item.quantity ?? 1}
                   </p>
-                  <p className="text-sm font-medium text-zinc-900">{formatCurrency(item.price * item.quantity)}</p>
+                  <p className="text-sm font-medium text-zinc-900">{formatCurrency(item.price * (item.quantity ?? 1))}</p>
                 </div>
               </div>
             </div>
