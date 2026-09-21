@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Plus, Minus, ShoppingCart, Sparkles, Heart, Gift } from "lucide-react"
 import Image from "next/image"
 import { formatCurrency } from "@/lib/utils"
+import { addToCart } from "@/lib/cart"
 
 interface BasketItem {
   id: number
@@ -80,6 +81,7 @@ export function BasketBuilderInterface() {
   const [personalMessage, setPersonalMessage] = useState("")
   const [recipientName, setRecipientName] = useState("")
   const [activeTab, setActiveTab] = useState("configure")
+  const [cartAdded, setCartAdded] = useState(false)
 
   const addItem = (item: Omit<BasketItem, "quantity">) => {
     const existingItem = selectedItems.find((i) => i.id === item.id)
@@ -371,9 +373,24 @@ export function BasketBuilderInterface() {
                   </div>
                 </div>
 
-                <Button className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700">
+                <Button
+                  className="w-full bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700"
+                  onClick={() => {
+                    selectedItems.forEach((item) => {
+                      addToCart({
+                        id: item.id,
+                        name: item.name,
+                        price: item.price,
+                        image: item.image,
+                        category: item.category,
+                      }, item.quantity)
+                    })
+                    setCartAdded(true)
+                    window.setTimeout(() => setCartAdded(false), 2200)
+                  }}
+                >
                   <ShoppingCart className="w-4 h-4 mr-2" />
-                  Add to Cart
+                  {cartAdded ? "Added to Cart" : "Add to Cart"}
                 </Button>
               </>
             )}

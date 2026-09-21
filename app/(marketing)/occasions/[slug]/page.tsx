@@ -1,5 +1,3 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { OccasionProductGrid } from "@/components/occasion-product-grid"
 import { OccasionHero } from "@/components/occasion-hero"
 import { notFound } from "next/navigation"
@@ -73,12 +71,10 @@ export default async function OccasionPage({ params }: PageProps) {
 
   return (
     <div className="min-h-screen bg-zinc-50/50 selection:bg-zinc-100">
-      <Header />
       <main>
         <OccasionHero occasion={occasion} slug={slug} />
         <OccasionProductGrid occasionSlug={slug} />
       </main>
-      <Footer />
     </div>
   )
 }

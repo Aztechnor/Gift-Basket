@@ -1,12 +1,9 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { AIRecommendationEngine } from "@/components/ai-recommendation-engine"
 import { Sparkles, Brain, Target } from "lucide-react"
 
 export default function AIRecommendationsPage() {
   return (
     <div className="min-h-screen bg-zinc-50/50 selection:bg-zinc-100">
-      <Header />
       <main className="py-16">
         <div className="container mx-auto px-4">
           {/* Hero Section */}
@@ -55,7 +52,6 @@ export default function AIRecommendationsPage() {
           <AIRecommendationEngine />
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,46 +10,46 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { Plus, Pencil, Trash2, Search, UploadCloud } from "lucide-react"
-
-// Mock initial data
-const initialProducts = [
-  { id: 1, name: "Classic Red Rose Bouquet", price: 8500, category: "Bouquets", stock: 24, status: "Active" },
-  { id: 2, name: "Artisan Chocolate Truffle Box", price: 4200, category: "Edibles", stock: 15, status: "Active" },
-  { id: 3, name: "Spa Day Relaxation Basket", price: 12500, category: "Baskets", stock: 8, status: "Low Stock" },
-  { id: 4, name: "Get Well Soon Care Package", price: 6800, category: "Care Packages", stock: 45, status: "Active" },
-  { id: 5, name: "Premium Coffee Gift Set", price: 5500, category: "Baskets", stock: 0, status: "Out of Stock" },
-]
+import { getInventoryStatus, readInventory, saveInventory, type AdminInventoryItem } from "@/lib/admin-data"
 
 export default function InventoryManagement() {
-  const [products, setProducts] = useState(initialProducts)
+  const [products, setProducts] = useState<AdminInventoryItem[]>([])
   const [search, setSearch] = useState("")
   const [isAddOpen, setIsAddOpen] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
-  const [currentProduct, setCurrentProduct] = useState<any>(null)
+  const [currentProduct, setCurrentProduct] = useState<AdminInventoryItem | null>(null)
 
-  // Form states
   const [formData, setFormData] = useState({
     name: "",
     description: "",
     price: "",
     category: "",
     stock: "",
-    image: null as File | null
+    image: null as File | null,
   })
 
-  const filteredProducts = products.filter(p => p.name.toLowerCase().includes(search.toLowerCase()))
+  useEffect(() => {
+    setProducts(readInventory())
+  }, [])
+
+  const filteredProducts = products.filter((p) => p.name.toLowerCase().includes(search.toLowerCase()))
+
+  const persistProducts = (updated: AdminInventoryItem[]) => {
+    setProducts(updated)
+    saveInventory(updated)
+  }
 
   const handleAddSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    const newProduct = {
-      id: products.length + 1,
+    const newProduct: AdminInventoryItem = {
+      id: products.length ? Math.max(...products.map((product) => product.id)) + 1 : 1,
       name: formData.name,
       price: Number(formData.price),
       category: formData.category,
       stock: Number(formData.stock),
-      status: Number(formData.stock) > 10 ? "Active" : Number(formData.stock) > 0 ? "Low Stock" : "Out of Stock"
+      status: getInventoryStatus(Number(formData.stock)),
     }
-    setProducts([...products, newProduct])
+    persistProducts([...products, newProduct])
     setIsAddOpen(false)
     setFormData({ name: "", description: "", price: "", category: "", stock: "", image: null })
   }
@@ -57,7 +57,7 @@ export default function InventoryManagement() {
   const handleEditSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!currentProduct) return
-    const updated = products.map(p => {
+    const updated = products.map((p) => {
       if (p.id === currentProduct.id) {
         return {
           ...p,
@@ -65,51 +65,51 @@ export default function InventoryManagement() {
           price: Number(formData.price),
           category: formData.category,
           stock: Number(formData.stock),
-          status: Number(formData.stock) > 10 ? "Active" : Number(formData.stock) > 0 ? "Low Stock" : "Out of Stock"
+          status: getInventoryStatus(Number(formData.stock)),
         }
       }
       return p
     })
-    setProducts(updated)
+    persistProducts(updated)
     setIsEditOpen(false)
   }
 
-  const openEdit = (product: any) => {
+  const openEdit = (product: AdminInventoryItem) => {
     setCurrentProduct(product)
     setFormData({
       name: product.name,
-      description: "A beautiful gift item.", // Mock description
+      description: "A beautiful gift item.",
       price: String(product.price),
       category: product.category,
       stock: String(product.stock),
-      image: null
+      image: null,
     })
     setIsEditOpen(true)
   }
 
   const handleDelete = (id: number) => {
-    setProducts(products.filter(p => p.id !== id))
+    persistProducts(products.filter((p) => p.id !== id))
   }
 
   const renderFormFields = () => (
     <div className="grid gap-4 py-4">
       <div className="grid gap-2">
         <Label htmlFor="name">Product Name</Label>
-        <Input id="name" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} required />
+        <Input id="name" value={formData.name} onChange={(e) => setFormData({ ...formData, name: e.target.value })} required />
       </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="grid gap-2">
           <Label htmlFor="price">Price (KES)</Label>
-          <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({...formData, price: e.target.value})} required />
+          <Input id="price" type="number" value={formData.price} onChange={(e) => setFormData({ ...formData, price: e.target.value })} required />
         </div>
         <div className="grid gap-2">
           <Label htmlFor="stock">Stock Quantity</Label>
-          <Input id="stock" type="number" value={formData.stock} onChange={(e) => setFormData({...formData, stock: e.target.value})} required />
+          <Input id="stock" type="number" value={formData.stock} onChange={(e) => setFormData({ ...formData, stock: e.target.value })} required />
         </div>
       </div>
       <div className="grid gap-2">
         <Label htmlFor="category">Category</Label>
-        <Select value={formData.category} onValueChange={(val) => setFormData({...formData, category: val})}>
+        <Select value={formData.category} onValueChange={(val) => setFormData({ ...formData, category: val })}>
           <SelectTrigger>
             <SelectValue placeholder="Select a category" />
           </SelectTrigger>
@@ -124,7 +124,7 @@ export default function InventoryManagement() {
       </div>
       <div className="grid gap-2">
         <Label htmlFor="description">Description</Label>
-        <Textarea id="description" rows={3} value={formData.description} onChange={(e) => setFormData({...formData, description: e.target.value})} />
+        <Textarea id="description" rows={3} value={formData.description} onChange={(e) => setFormData({ ...formData, description: e.target.value })} />
       </div>
       <div className="grid gap-2">
         <Label>Product Image</Label>
@@ -132,8 +132,8 @@ export default function InventoryManagement() {
           <UploadCloud className="w-8 h-8 text-zinc-400 mb-2" />
           <p className="text-sm font-medium text-zinc-700">Click to upload or drag and drop</p>
           <p className="text-xs text-zinc-500 mt-1">SVG, PNG, JPG or GIF (max. 5MB)</p>
-          <Input type="file" className="hidden" id="image-upload" onChange={(e) => setFormData({...formData, image: e.target.files?.[0] || null})} />
-          <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => document.getElementById('image-upload')?.click()}>
+          <Input type="file" className="hidden" id="image-upload" onChange={(e) => setFormData({ ...formData, image: e.target.files?.[0] || null })} />
+          <Button type="button" variant="outline" size="sm" className="mt-4" onClick={() => document.getElementById("image-upload")?.click()}>
             Select File
           </Button>
           {formData.image && <p className="text-xs text-green-600 mt-2">Selected: {formData.image.name}</p>}
@@ -149,7 +149,7 @@ export default function InventoryManagement() {
           <h2 className="text-2xl font-bold tracking-tight text-zinc-900">Inventory Management</h2>
           <p className="text-zinc-500">Manage your product catalog and inventory levels.</p>
         </div>
-        
+
         <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
           <DialogTrigger asChild>
             <Button className="bg-zinc-900 hover:bg-zinc-800 text-white">
@@ -164,7 +164,9 @@ export default function InventoryManagement() {
               </DialogHeader>
               {renderFormFields()}
               <DialogFooter>
-                <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>Cancel</Button>
+                <Button type="button" variant="outline" onClick={() => setIsAddOpen(false)}>
+                  Cancel
+                </Button>
                 <Button type="submit">Save Product</Button>
               </DialogFooter>
             </form>
@@ -178,12 +180,7 @@ export default function InventoryManagement() {
             <CardTitle>Products</CardTitle>
             <div className="relative w-64">
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-zinc-500" />
-              <Input
-                placeholder="Search products..."
-                className="pl-9 bg-zinc-50 border-none"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+              <Input placeholder="Search products..." className="pl-9 bg-zinc-50 border-none" value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
           </div>
         </CardHeader>
@@ -208,11 +205,7 @@ export default function InventoryManagement() {
                     <TableCell>{product.price.toLocaleString()}</TableCell>
                     <TableCell>{product.stock}</TableCell>
                     <TableCell>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                        product.status === 'Active' ? 'bg-green-100 text-green-700' :
-                        product.status === 'Low Stock' ? 'bg-amber-100 text-amber-700' :
-                        'bg-rose-100 text-rose-700'
-                      }`}>
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${product.status === "Active" ? "bg-green-100 text-green-700" : product.status === "Low Stock" ? "bg-amber-100 text-amber-700" : "bg-rose-100 text-rose-700"}`}>
                         {product.status}
                       </span>
                     </TableCell>
@@ -241,7 +234,9 @@ export default function InventoryManagement() {
             </DialogHeader>
             {renderFormFields()}
             <DialogFooter>
-              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>Cancel</Button>
+              <Button type="button" variant="outline" onClick={() => setIsEditOpen(false)}>
+                Cancel
+              </Button>
               <Button type="submit">Update Product</Button>
             </DialogFooter>
           </form>

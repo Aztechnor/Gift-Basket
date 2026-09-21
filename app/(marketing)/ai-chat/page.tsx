@@ -3,8 +3,6 @@
 import type React from "react"
 
 import { useState, useRef, useEffect } from "react"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -127,7 +125,6 @@ export default function AIChatPage() {
 
   return (
     <div className="min-h-screen bg-zinc-50/50 selection:bg-zinc-100">
-      <Header />
       <main className="py-4 sm:py-8">
         <div className="container mx-auto px-4 max-w-6xl">
           {/* Header */}
@@ -344,7 +341,6 @@ export default function AIChatPage() {
           </Card>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

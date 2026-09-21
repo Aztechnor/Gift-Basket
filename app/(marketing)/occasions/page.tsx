@@ -1,12 +1,9 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { OccasionsGrid } from "@/components/occasions-grid"
 import { Sparkles } from "lucide-react"
 
 export default function OccasionsPage() {
   return (
     <div className="min-h-screen bg-zinc-50/50 selection:bg-zinc-100">
-      <Header />
       <main>
         {/* Hero Section */}
         <section className="py-16 lg:py-24">
@@ -30,7 +27,6 @@ export default function OccasionsPage() {
 
         <OccasionsGrid />
       </main>
-      <Footer />
     </div>
   )
 }

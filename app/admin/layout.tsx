@@ -1,7 +1,5 @@
 import type { Metadata } from "next"
-import { Inter } from "next/font/google"
-
-const inter = Inter({ subsets: ["latin"] })
+import { AdminAuthProvider } from "@/components/admin-auth"
 
 export const metadata: Metadata = {
   title: "Admin - GiftBasket",
@@ -14,10 +12,6 @@ export default function AdminLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={`${inter.className} antialiased bg-zinc-50 min-h-screen`}>
-        {children}
-      </body>
-    </html>
+    <AdminAuthProvider>{children}</AdminAuthProvider>
   )
 }

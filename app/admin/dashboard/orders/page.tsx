@@ -1,44 +1,47 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useEffect, useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Search, Eye, Filter } from "lucide-react"
-
-// Mock initial data
-const initialOrders = [
-  { id: "GFT-452391", recipient: "Jane Doe", date: "2026-08-08", status: "Pending", amount: 8500 },
-  { id: "GFT-923841", recipient: "Michael Smith", date: "2026-08-07", status: "Processing", amount: 12500 },
-  { id: "GFT-129482", recipient: "Sarah Jenkins", date: "2026-08-07", status: "Shipped", amount: 4200 },
-  { id: "GFT-847291", recipient: "Robert Williams", date: "2026-08-06", status: "Delivered", amount: 6800 },
-  { id: "GFT-592813", recipient: "Emily Chen", date: "2026-08-05", status: "Delivered", amount: 5500 },
-]
+import { readOrders, saveOrders, type AdminOrder } from "@/lib/admin-data"
 
 export default function ManageOrders() {
-  const [orders, setOrders] = useState(initialOrders)
+  const [orders, setOrders] = useState<AdminOrder[]>([])
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState("All")
 
-  const filteredOrders = orders.filter(o => {
+  useEffect(() => {
+    setOrders(readOrders())
+  }, [])
+
+  const filteredOrders = orders.filter((o) => {
     const matchesSearch = o.recipient.toLowerCase().includes(search.toLowerCase()) || o.id.toLowerCase().includes(search.toLowerCase())
     const matchesStatus = statusFilter === "All" || o.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
   const handleStatusChange = (id: string, newStatus: string) => {
-    setOrders(orders.map(o => o.id === id ? { ...o, status: newStatus } : o))
+    const updated = orders.map((o) => (o.id === id ? { ...o, status: newStatus as AdminOrder["status"] } : o))
+    setOrders(updated)
+    saveOrders(updated)
   }
 
   const getStatusColor = (status: string) => {
-    switch(status) {
-      case "Pending": return "bg-amber-100 text-amber-700"
-      case "Processing": return "bg-blue-100 text-blue-700"
-      case "Shipped": return "bg-purple-100 text-purple-700"
-      case "Delivered": return "bg-green-100 text-green-700"
-      default: return "bg-zinc-100 text-zinc-700"
+    switch (status) {
+      case "Pending":
+        return "bg-amber-100 text-amber-700"
+      case "Processing":
+        return "bg-blue-100 text-blue-700"
+      case "Shipped":
+        return "bg-purple-100 text-purple-700"
+      case "Delivered":
+        return "bg-green-100 text-green-700"
+      default:
+        return "bg-zinc-100 text-zinc-700"
     }
   }
 
@@ -104,10 +107,7 @@ export default function ManageOrders() {
                     <TableCell>{new Date(order.date).toLocaleDateString()}</TableCell>
                     <TableCell>{order.amount.toLocaleString()}</TableCell>
                     <TableCell>
-                      <Select 
-                        value={order.status} 
-                        onValueChange={(val) => handleStatusChange(order.id, val)}
-                      >
+                      <Select value={order.status} onValueChange={(val) => handleStatusChange(order.id, val)}>
                         <SelectTrigger className={`h-8 border-none font-medium w-[120px] ${getStatusColor(order.status)}`}>
                           <SelectValue />
                         </SelectTrigger>

@@ -1,9 +1,8 @@
 "use client"
 
-import * as React from "react"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
 import Link from "next/link"
-import { LayoutDashboard, Package, ShoppingCart, Users, Settings, LogOut } from "lucide-react"
+import { LayoutDashboard, Package, ShoppingCart, LogOut } from "lucide-react"
 
 import {
   Sidebar,
@@ -13,10 +12,8 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarProvider,
-  SidebarTrigger,
-  SidebarInset,
 } from "@/components/ui/sidebar"
+import { useAdminAuth } from "@/components/admin-auth"
 
 const data = {
   navMain: [
@@ -35,21 +32,18 @@ const data = {
       url: "/admin/dashboard/orders",
       icon: ShoppingCart,
     },
-    {
-      title: "Customers",
-      url: "#",
-      icon: Users,
-    },
-    {
-      title: "Settings",
-      url: "#",
-      icon: Settings,
-    },
   ],
 }
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const router = useRouter()
+  const { logout } = useAdminAuth()
+
+  const handleLogout = () => {
+    logout()
+    router.replace("/admin")
+  }
 
   return (
     <Sidebar variant="inset">
@@ -82,11 +76,9 @@ export function AdminSidebar() {
       <SidebarFooter className="border-t p-4">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="text-zinc-500 hover:text-zinc-900">
-              <Link href="/admin">
-                <LogOut className="w-5 h-5 mr-3" />
-                Sign Out
-              </Link>
+            <SidebarMenuButton className="text-zinc-500 hover:text-zinc-900" onClick={handleLogout}>
+              <LogOut className="w-5 h-5 mr-3" />
+              Sign Out
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

@@ -1,12 +1,9 @@
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { FeaturedProducts } from "@/components/featured-products"
 import { Gift } from "lucide-react"
 
 export default function ProductsPage() {
   return (
     <div className="min-h-screen bg-zinc-50/50 selection:bg-zinc-100">
-      <Header />
       <main>
         {/* Hero Section */}
         <section className="py-16 lg:py-24 bg-white">
@@ -25,7 +22,6 @@ export default function ProductsPage() {
         </section>
         <FeaturedProducts />
       </main>
-      <Footer />
     </div>
   )
 }

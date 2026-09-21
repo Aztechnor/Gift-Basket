@@ -1,13 +1,14 @@
 "use client"
 
 import * as React from "react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { usePathname } from "next/navigation"
 import Link from "next/link"
 import { ShoppingCart, User, Menu, X, Search, Brain, Sparkles, Heart, Gift, CalendarHeart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
+import { getCartCount } from "@/lib/cart"
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -50,8 +51,16 @@ ListItem.displayName = "ListItem"
 
 export function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const [cartCount] = useState(3)
+  const [cartCount, setCartCount] = useState(0)
   const pathname = usePathname()
+
+  useEffect(() => {
+    const updateCount = () => setCartCount(getCartCount())
+    updateCount()
+
+    window.addEventListener("giftbasket-cart-updated", updateCount)
+    return () => window.removeEventListener("giftbasket-cart-updated", updateCount)
+  }, [])
 
   const isActive = (path: string) => pathname === path
 

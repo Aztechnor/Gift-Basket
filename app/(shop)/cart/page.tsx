@@ -1,13 +1,10 @@
 import Link from "next/link"
-import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { CartItems } from "@/components/cart-items"
 import { OrderSummary } from "@/components/order-summary"
 
 export default function CartPage() {
   return (
     <div className="min-h-screen bg-zinc-50/50 selection:bg-zinc-100 flex flex-col">
-      <Header />
       <main className="py-8 flex-1">
         <div className="container mx-auto px-4">
           <div className="mb-8 flex items-center justify-between">
@@ -26,7 +23,6 @@ export default function CartPage() {
           </div>
         </div>
       </main>
-      <Footer />
     </div>
   )
 }

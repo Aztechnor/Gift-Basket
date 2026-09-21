@@ -1,8 +1,26 @@
+"use client"
+
 import * as React from "react"
+import { useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { AdminSidebar } from "@/components/admin-sidebar"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
+import { useAdminAuth } from "@/components/admin-auth"
 
 export default function AdminDashboardLayout({ children }: { children: React.ReactNode }) {
+  const router = useRouter()
+  const { isAuthenticated } = useAdminAuth()
+
+  useEffect(() => {
+    if (!isAuthenticated) {
+      router.replace("/admin")
+    }
+  }, [isAuthenticated, router])
+
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <div className="bg-white">
       <SidebarProvider>
